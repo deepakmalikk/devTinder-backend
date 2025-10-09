@@ -11,6 +11,14 @@ app.get("/user",(req, res) => {
     }])
   })
 
+  app.post("/user",(req,res)=>{
+    res.send("data saved Sucessfully")
+  })
+
+  app.delete("/user",(req,res)=>{
+    res.send("deleted sucessfully.")
+  })
+
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
