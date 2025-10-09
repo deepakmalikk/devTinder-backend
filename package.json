@@ -4,12 +4,11 @@
   "main": "index.js",
   "scripts": {
     "start": "node src/app.js",
-   "dev": "nodemon src/app.js"
+    "dev": "nodemon src/app.js"
   },
   "keywords": [
-    "nodeJS",
-    "backend",
-    "devTinder"
+    "nodejs",
+    "backend"
   ],
   "author": "Deepak Malik",
   "license": "ISC",
