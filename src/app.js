@@ -9,10 +9,13 @@ app.get("/feed", async (req, res) => {
 
   try {
     // To find specific user
-    // const user = await User.find({ email: userEmail });
+    // const users = await User.find({ email: userEmail });
 
     // To find all user
-    const users = await User.find({});
+    // const users = await User.find({});
+
+    // To find user by Id
+    const users = await User.findById("68e943abceea48e01d3c0ba5");
     res.send(users);
     if (users.length === 0) {
       res.status(404).send("Users not found");
@@ -21,6 +24,19 @@ app.get("/feed", async (req, res) => {
     res.status(400).send(err.message);
   }
 });
+
+// TO delete user
+
+app.delete("/user",async(req,res)=>{
+    const userId = req.body.id;
+
+    try{
+     await User.findByIdAndDelete(userId);
+     res.status(200).send("User deleted successfully");
+    }catch(err){
+      res.status(400).send("Not able to delete user")
+    }
+})
 // TO put dynamic data into database
 app.post("/signup",async (req,res)=>{
     const user = new User(req.body);
