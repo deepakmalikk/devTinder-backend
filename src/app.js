@@ -3,8 +3,12 @@ const User = require("./models/user");
 const app = express();
 const connectDB = require("./config/database")
 const cookieParser = require("cookie-parser");
+const cors = require("cors");
 
-
+app.use(cors({
+    credentials:true,
+    origin:"http://localhost:5173"
+}))
 app.use(express.json());
 app.use(cookieParser());
 
@@ -26,7 +30,7 @@ app.use("/", userRouter);
 connectDB()
 .then(()=>{
     console.log("Connected to MongoDB");
-  app.listen(3000,()=>{
+    app.listen(3000,()=>{
     console.log("listening port 3000");
   })
 })
