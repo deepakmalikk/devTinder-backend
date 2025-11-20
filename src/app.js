@@ -1,41 +1,65 @@
 const express = require("express");
-const User = require("./models/user");
-const app = express();
-const connectDB = require("./config/database")
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 require("dotenv").config();
 
-app.use(cors({
-    credentials:true,
-    origin:"http://localhost:5173"
-}))
-app.use(express.json());
-app.use(cookieParser());
+const connectDB = require("./config/database");
 
 const authRouter = require("./routes/auth");
 const profileRouter = require("./routes/profile");
 const requestRouter = require("./routes/request");
 const userRouter = require("./routes/user");
 
+const app = express();
 
+// ---------- CORS ----------
+const allowedOrigins = [
+  "http://localhost:5173",               // local dev
+  "https://devtinder-0cnr.onrender.com", // deployed frontend
+];
 
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // allow requests with no origin (like Postman) or allowed origins
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error("Not allowed by CORS: " + origin));
+    },
+    credentials: true,
+  })
+);
+
+// ---------- Middleware ----------
+app.use(express.json());
+app.use(cookieParser());
+
+// ---------- Routes ----------
 app.use("/", authRouter);
 app.use("/", profileRouter);
 app.use("/", requestRouter);
 app.use("/", userRouter);
 
+// Simple health check route for Render/Railway
+app.get("/health", (req, res) => {
+  res.json({ status: "ok" });
+});
 
-
+// ---------- DB + Server start ----------
+const PORT = process.env.PORT || 7777; // fallback for local dev
 
 connectDB()
-.then(()=>{
-    console.log("Connected to MongoDB");
-    app.listen(process.env.PORT,()=>{
-    console.log("listening port: "+process.env.PORT);
+  .then(() => {
+    console.log("✅ Connected to MongoDB");
+    app.listen(PORT, () => {
+      console.log("🚀 Server listening on port: " + PORT);
+    });
   })
-})
-.catch((err)=>{
-    console.log("not able to connect");
-})
+  .catch((err) => {
+    console.error("❌ Not able to connect to MongoDB");
+    console.error(err.message); // log actual error
+    process.exit(1); // fail fast in render/railway
+  });
 
+module.exports = app;
