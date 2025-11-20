@@ -4,6 +4,7 @@ const app = express();
 const connectDB = require("./config/database")
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
+require("dotenv").config();
 
 app.use(cors({
     credentials:true,
@@ -30,8 +31,8 @@ app.use("/", userRouter);
 connectDB()
 .then(()=>{
     console.log("Connected to MongoDB");
-    app.listen(3000,()=>{
-    console.log("listening port 3000");
+    app.listen(process.env.PORT,()=>{
+    console.log("listening port: "+process.env.PORT);
   })
 })
 .catch((err)=>{
