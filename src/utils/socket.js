@@ -4,7 +4,7 @@ const socket =require("socket.io");
 const initializeSocket = (server) => {
   const io = socket(server, {
     cors: {
-      origin: "http://localhost:5173"
+      origin: "https://devtinder-0cnr.onrender.com"
     }
   });
 
@@ -20,7 +20,7 @@ const initializeSocket = (server) => {
 
     socket.io("sendMessage", (firstName, userId, targetUserId, message)=>{
         const roomId = [userId, targetUserId].sort().join("_");
-        io.to(roomId).emit("receiveMessage", { firstName, message });
+        io.to(roomId).emit(" ", { firstName, message });
         console.log(`Message from ${firstName}: ${message}`);
     });
 
