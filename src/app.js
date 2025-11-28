@@ -10,16 +10,11 @@ const profileRouter = require("./routes/profile");
 const requestRouter = require("./routes/request");
 const userRouter = require("./routes/user");
 
-
 const app = express();
 const http = require("http");
 const { initializeSocket } = require("./utils/socket");
 
 const server = http.createServer(app);
-
-
-initializeSocket(server);
-
 
 // ---------- CORS ----------
 const allowedOrigins = [
@@ -27,10 +22,11 @@ const allowedOrigins = [
   "https://devtinder-0cnr.onrender.com", // deployed frontend
 ];
 
+initializeSocket(server);
+
 app.use(
   cors({
     origin: function (origin, callback) {
-      // allow requests with no origin (like Postman) or allowed origins
       if (!origin || allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
@@ -50,13 +46,12 @@ app.use("/api", profileRouter);
 app.use("/api", requestRouter);
 app.use("/api", userRouter);
 
-// Simple health check route for Render/Railway
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
 // ---------- DB + Server start ----------
-const PORT = process.env.PORT || 7777; // fallback for local dev
+const PORT = process.env.PORT || 7777;
 
 connectDB()
   .then(() => {
@@ -67,8 +62,8 @@ connectDB()
   })
   .catch((err) => {
     console.error("❌ Not able to connect to MongoDB");
-    console.error(err.message); // log actual error
-    process.exit(1); // fail fast in render/railway
+    console.error(err.message);
+    process.exit(1);
   });
 
 module.exports = app;
