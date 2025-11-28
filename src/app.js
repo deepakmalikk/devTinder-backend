@@ -10,7 +10,16 @@ const profileRouter = require("./routes/profile");
 const requestRouter = require("./routes/request");
 const userRouter = require("./routes/user");
 
+
 const app = express();
+const http = require("http");
+const { initializeSocket } = require("./utils/socket");
+
+const server = http.createServer(app);
+
+
+initializeSocket(server);
+
 
 // ---------- CORS ----------
 const allowedOrigins = [
@@ -52,7 +61,7 @@ const PORT = process.env.PORT || 7777; // fallback for local dev
 connectDB()
   .then(() => {
     console.log("✅ Connected to MongoDB");
-    app.listen(PORT, () => {
+    server.listen(PORT, () => {
       console.log("🚀 Server listening on port: " + PORT);
     });
   })
