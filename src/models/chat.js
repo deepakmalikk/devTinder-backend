@@ -1,27 +1,33 @@
 const mongoose = require("mongoose");
 
-const messageSchema =  new mongoose.Schema({
+const messageSchema = new mongoose.Schema(
+  {
     senderId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-        required: true
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
     text: {
-        type: String,
-        required: true,
-    }
-}, { timestamps: true });
-
+      type: String,
+      required: true,
+    },
+  },
+  { timestamps: true }
+);
 
 const chatSchema = new mongoose.Schema({
-    participants: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-        required: true
-    }],
-
-    message: [messageSchema],
-    
+  participants: [ 
+    // it will be array as particaipant cann't be one.
+    { 
+      type: mongoose.Schema.Types.ObjectId, 
+      ref: "User", 
+      required: true 
+    },
+  ],
+  // we are adding one schema inside another schema.
+  messages: [messageSchema],
 });
 
-module.exports = mongoose.model("Chat", chatSchema);
+const Chat = mongoose.model("Chat", chatSchema);
+
+module.exports = { Chat };

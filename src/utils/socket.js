@@ -1,65 +1,72 @@
-const socket = require("socket.io");
 const crypto = require("crypto");
+const socket = require("socket.io");
+const { Chat } = require("../models/chat");
 
 const getSecretRoomId = (userId, targetUserId) => {
   return crypto
     .createHash("sha256")
-    .update([userId, targetUserId].sort().join("_"))
+    .update([userId, targetUserId].sort().join("$"))
     .digest("hex");
 };
 
-const initializeSocket = (server) => {
+const allowedOrigins = [
+    "http://localhost:5173",
+    "https://devtinder-0cnr.onrender.com",
+  ];
+
+const initializeSocket = (server) =>{
   const io = socket(server, {
     cors: {
-      origin: [
-        "http://localhost:5173",                // local dev
-        "https://devtinder-0cnr.onrender.com",  // deployed frontend
-      ],
-      methods: ["GET", "POST"],
+      origin: allowedOrigins,
       credentials: true,
     },
   });
 
-  io.on("connection", (socket) => {
-    console.log("Socket connected:", socket.id);
 
-    socket.on("joinChat", ([userId, targetUserId]) => {
+  io.on("connection", (socket)=>{
+    socket.on("joinChat", ({firstName, userId, targetUserId})=>{
       const roomId = getSecretRoomId(userId, targetUserId);
+
+      console.log(firstName + " joined Room : " + roomId);
       socket.join(roomId);
-      console.log(`User ${userId} joined room ${roomId}`);
     });
+    socket.on("sendMessage", async ({firstName, userId, targetUserId, text})=>{
+      
 
-    socket.on("sendMessage", async({ firstName, userId, targetUserId, message }) => {
+      //save message to the database.
       try {
-         const roomId = getSecretRoomId(userId, targetUserId);
-         let chat = await Chat.findOne({
-        participants: { $all: [userId, targetUserId]},
-      })
+        const roomId = getSecretRoomId(userId, targetUserId);
+        console.log(`💬 ${firstName} sent message in room ${roomId}: ${text}`);
+        // There are two possibilietes either i'm sending 
+        // first message totally fresh conversation.
+        // Or i'm seconding message to exisiting chat and append new message to it.
+        
+      let chat = await Chat.findOne({
+        participants: { $all: [userId, targetUserId] },
+      });
 
-      if(!chat){
+      if (!chat) {
         chat = new Chat({
-          participants: [userId, targetUserId],
-          messages: [],
+          participants:[userId, targetUserId],
+          messages:[]
+        });
+      }
+        chat.messages.push({
+          senderId: userId,
+          text,
         })
-      }
-      chat.message.push({
-        senderId:  userId,
-        message,
-      })
         await chat.save();
-         io.to(roomId).emit("newMessage", { firstName, message, userId, targetUserId });
-         console.log(`Message from ${firstName}: ${message}`);
+        io.to(roomId).emit("messageRecieved", {firstName, text});
 
+      
       } catch (error) {
-        console.error("Error saving message:", error);
+        console.log(error);
       }
-     
-    });
 
-    socket.on("disconnect", () => {
-      console.log("user disconnected:", socket.id);
+      
     });
-  });
+    socket.on("disconnect", ()=>{});
+  })
 };
 
-module.exports = { initializeSocket };
+module.exports = initializeSocket;

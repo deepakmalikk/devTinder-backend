@@ -9,10 +9,11 @@ const authRouter = require("./routes/auth");
 const profileRouter = require("./routes/profile");
 const requestRouter = require("./routes/request");
 const userRouter = require("./routes/user");
+ 
 
 const app = express();
 const http = require("http");
-const { initializeSocket } = require("./utils/socket");
+const initializeSocket = require("./utils/socket");
 
 const server = http.createServer(app);
 
@@ -26,11 +27,16 @@ initializeSocket(server);
 
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
+  origin: function (origin, callback) {
+      // allow requests with no origin (like mobile apps, curl)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
-      return callback(new Error("Not allowed by CORS: " + origin));
+
+      // origin not allowed
+      return callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
   })
@@ -45,6 +51,7 @@ app.use("/api", authRouter);
 app.use("/api", profileRouter);
 app.use("/api", requestRouter);
 app.use("/api", userRouter);
+ 
 
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
