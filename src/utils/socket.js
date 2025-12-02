@@ -27,16 +27,16 @@ const initializeSocket = (server) =>{
     socket.on("joinChat", ({firstName, userId, targetUserId})=>{
       const roomId = getSecretRoomId(userId, targetUserId);
 
-      console.log(firstName + " joined Room : " + roomId);
+      
       socket.join(roomId);
     });
-    socket.on("sendMessage", async ({firstName, userId, targetUserId, text})=>{
+    socket.on("sendMessage", async ({firstName,lastName, userId, targetUserId, text})=>{
       
 
       //save message to the database.
       try {
         const roomId = getSecretRoomId(userId, targetUserId);
-        console.log(`💬 ${firstName} sent message in room ${roomId}: ${text}`);
+       
         // There are two possibilietes either i'm sending 
         // first message totally fresh conversation.
         // Or i'm seconding message to exisiting chat and append new message to it.
@@ -56,7 +56,7 @@ const initializeSocket = (server) =>{
           text,
         })
         await chat.save();
-        io.to(roomId).emit("messageRecieved", {firstName, text});
+        io.to(roomId).emit("messageRecieved", {firstName,lastName, text});
 
       
       } catch (error) {

@@ -20,24 +20,14 @@ const server = http.createServer(app);
 // ---------- CORS ----------
 const allowedOrigins = [
   "http://localhost:5173",               // local dev
-  "https://devtinder-0cnr.onrender.com", // deployed frontend
+  "https://devtinder-0cnr.onrender.com", // deployed frontendx
 ];
 
 initializeSocket(server);
 
 app.use(
   cors({
-  origin: function (origin, callback) {
-      // allow requests with no origin (like mobile apps, curl)
-      if (!origin) return callback(null, true);
-
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-
-      // origin not allowed
-      return callback(new Error("Not allowed by CORS"));
-    },
+  origin: allowedOrigins,
     credentials: true,
   })
 );
@@ -47,11 +37,11 @@ app.use(express.json());
 app.use(cookieParser());
 
 // ---------- Routes ----------
-app.use("/api", authRouter);
-app.use("/api", profileRouter);
-app.use("/api", requestRouter);
-app.use("/api", userRouter);
-app.use("/api", chatRouter);
+app.use("/", authRouter);
+app.use("/", profileRouter);
+app.use("/", requestRouter);
+app.use("/", userRouter);
+app.use("/", chatRouter);
 
  
 
@@ -66,7 +56,7 @@ connectDB()
   .then(() => {
     console.log("✅ Connected to MongoDB");
     server.listen(PORT, () => {
-      console.log("🚀 Server listening on port: " + PORT);
+      console.log(" Server listening on port: " + PORT);
     });
   })
   .catch((err) => {
