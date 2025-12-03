@@ -10,7 +10,7 @@ const getSecretRoomId = (userId, targetUserId) => {
 };
 
 const allowedOrigins = [
-    "http://localhost:5173",
+    "http://localhost:5178",
     "https://devtinder-0cnr.onrender.com",
   ];
 
