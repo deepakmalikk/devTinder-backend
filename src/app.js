@@ -34,7 +34,7 @@ app.use(
 );
 
 // fallback — for any other route, return index.html
-app.get("/.*/", (req, res) => {
+app.get("/*splat", (req, res) => {
   res.sendFile(path.join(__dirname, "../client/build/index.html"));
 });
 // ---------- Middleware ----------
