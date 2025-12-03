@@ -14,9 +14,10 @@ const chatRouter = require("./routes/chat");
 const app = express();
 const http = require("http");
 const initializeSocket = require("./utils/socket");
-
+const path = require("path");
 const server = http.createServer(app);
 
+app.use(express.static(path.join(__dirname, "../client/build"))); 
 // ---------- CORS ----------
 const allowedOrigins = [
   "http://localhost:5173",               // local dev
@@ -32,6 +33,10 @@ app.use(
   })
 );
 
+// fallback — for any other route, return index.html
+app.get("/*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../client/build/index.html"));
+});
 // ---------- Middleware ----------
 app.use(express.json());
 app.use(cookieParser());
