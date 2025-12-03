@@ -13,9 +13,9 @@ requestRouter.post(
     try {
       const fromUserId = req.user._id;
       const toUserId = req.params.toUserId;
-      console.log(toUserId)
+       
       const status = req.params.status;
-      console.log(status)
+       
 
       const allowedStatus = ["ignored", "interested"];
       if (!allowedStatus.includes(status)) {
