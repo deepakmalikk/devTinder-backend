@@ -7,12 +7,12 @@ const bcrypt = require("bcrypt");
 
 // Helper: cookie options depending on environment
 const getCookieOptions = () => {
-  const isProd = process.env.NODE_ENV === "production";
+   
   return {
     httpOnly: true,
-    secure: isProd,                // true in production (HTTPS), false locally (http)
-    sameSite: isProd ? "none" : "lax", // none for cross-site when in production
-    maxAge: 8 * 3600000,           // 8 hours in ms (you used expires previously)
+    secure: true,                
+    sameSite:"none",  
+    maxAge: 8 * 3600000,            
     // path: '/', // default ok 
   };
 };
