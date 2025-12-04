@@ -1,3 +1,4 @@
+// routes/user.js
 const express = require("express");
 const userRouter = express.Router();
 
@@ -7,7 +8,9 @@ const User = require("../models/user");
 
 const USER_SAFE_DATA = "firstName lastName photoUrl age gender about skills";
 
-// Get all the pending connection request for the loggedIn user
+// ------------------------------
+// Get all pending connection requests for the logged-in user
+// ------------------------------
 userRouter.get("/user/requests/received", userAuth, async (req, res) => {
   try {
     const loggedInUser = req.user;
@@ -16,17 +19,22 @@ userRouter.get("/user/requests/received", userAuth, async (req, res) => {
       toUserId: loggedInUser._id,
       status: "interested",
     }).populate("fromUserId", USER_SAFE_DATA);
-    // }).populate("fromUserId", ["firstName", "lastName"]);
-    
+
+    // Filter out any broken requests where fromUserId is null
+    const safeRequests = connectionRequests.filter((r) => r.fromUserId);
+
     res.json({
       message: "Data fetched successfully",
-      data: connectionRequests,
+      data: safeRequests,
     });
   } catch (err) {
     res.status(400).send("ERROR: " + err.message);
   }
 });
 
+// ------------------------------
+// Get all accepted connections for the logged-in user
+// ------------------------------
 userRouter.get("/user/connections", userAuth, async (req, res) => {
   try {
     const loggedInUser = req.user;
@@ -45,7 +53,7 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
         const from = row.fromUserId;
         const to = row.toUserId;
 
-        
+        // skip corrupted rows
         if (!from || !to) return null;
 
         if (from._id.toString() === loggedInUser._id.toString()) {
@@ -61,7 +69,11 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
   }
 });
 
-
+// ------------------------------
+// Feed: Suggest users to connect with
+// - hide logged-in user
+// - hide users where a request already exists (either direction)
+// ------------------------------
 userRouter.get("/feed", userAuth, async (req, res) => {
   try {
     const loggedInUser = req.user;
@@ -72,20 +84,26 @@ userRouter.get("/feed", userAuth, async (req, res) => {
     const skip = (page - 1) * limit;
 
     const connectionRequests = await ConnectionRequest.find({
-      $or: [{ fromUserId: loggedInUser._id }, { toUserId: loggedInUser._id }],
-    }).select("fromUserId  toUserId");
+      $or: [
+        { fromUserId: loggedInUser._id },
+        { toUserId: loggedInUser._id },
+      ],
+    }).select("fromUserId toUserId");
 
-    const hideUsersFromFeed = new Set();
-    connectionRequests.forEach((req) => {
-      hideUsersFromFeed.add(req.fromUserId.toString());
-      hideUsersFromFeed.add(req.toUserId.toString());
+    // Start with logged-in user in the hidden set
+    const hideUsersFromFeed = new Set([loggedInUser._id.toString()]);
+
+    connectionRequests.forEach((reqDoc) => {
+      if (reqDoc.fromUserId) {
+        hideUsersFromFeed.add(reqDoc.fromUserId.toString());
+      }
+      if (reqDoc.toUserId) {
+        hideUsersFromFeed.add(reqDoc.toUserId.toString());
+      }
     });
 
     const users = await User.find({
-      $and: [
-        { _id: { $nin: Array.from(hideUsersFromFeed) } },
-        { _id: { $ne: loggedInUser._id } },
-      ],
+      _id: { $nin: Array.from(hideUsersFromFeed) },
     })
       .select(USER_SAFE_DATA)
       .skip(skip)
@@ -96,4 +114,5 @@ userRouter.get("/feed", userAuth, async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 });
-module.exports = userRouter; 
+
+module.exports = userRouter;
