@@ -6,16 +6,18 @@ const User = require("../models/user");
 const bcrypt = require("bcrypt");
 
 // Helper: cookie options depending on environment
-const getCookieOptions = () => {
-   
+
+const getCookieOptions = (env = process.env.NODE_ENV) => {
+  const isProduction = env === "production";
+
   return {
     httpOnly: true,
-    secure: true,                
-    sameSite:"none",  
-    maxAge: 8 * 3600000,            
-    // path: '/', // default ok 
+    secure: isProduction,              // ❗ HTTPS only in prod
+    sameSite: isProduction ? "none" : "lax", // dev: lax is simpler
+    maxAge: 8 * 3600000,
   };
 };
+
 
 authRouter.post("/signup", async (req, res) => {
   try {
@@ -44,7 +46,7 @@ skills    });
     const token = await savedUser.getJWT();
 
      // Set cookie with secure options
-    res.cookie("token", token, getCookieOptions());
+    res.cookie("token", token, getCookieOptions(process.env.NODE_ENV));
 
     res.json({ message: "User Added successfully!", data: savedUser });
   } catch (err) {
