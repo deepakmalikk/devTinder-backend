@@ -7,16 +7,29 @@ const bcrypt = require("bcrypt");
 
 // Helper: cookie options depending on environment
 
-const getCookieOptions = (env = process.env.NODE_ENV) => {
-  const isProduction = env === "production";
+// routes/auth.js
+const getCookieOptions = () => {
+  const isProduction = process.env.NODE_ENV === "production";
 
+  if (isProduction) {
+    // Render / HTTPS / different frontend+backend domains
+    return {
+      httpOnly: true,
+      secure: true,        // required when SameSite = 'none'
+      sameSite: "none",    // allow cross-site cookies (frontend & backend are different origins)
+      maxAge: 8 * 3600000, // 8 hours
+    };
+  }
+
+  // Local development (http://localhost)
   return {
     httpOnly: true,
-    secure: isProduction,              // ❗ HTTPS only in prod
-    sameSite: isProduction ? "none" : "lax", // dev: lax is simpler
+    secure: false,        // must be false if you're using http://localhost
+    sameSite: "lax",      // simpler for dev; still works fine
     maxAge: 8 * 3600000,
   };
 };
+
 
 
 authRouter.post("/signup", async (req, res) => {
@@ -46,7 +59,7 @@ skills    });
     const token = await savedUser.getJWT();
 
      // Set cookie with secure options
-    res.cookie("token", token, getCookieOptions(process.env.NODE_ENV));
+    res.cookie("token", token, getCookieOptions());
 
     res.json({ message: "User Added successfully!", data: savedUser });
   } catch (err) {
