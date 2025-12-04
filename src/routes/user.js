@@ -40,20 +40,27 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
       .populate("fromUserId", USER_SAFE_DATA)
       .populate("toUserId", USER_SAFE_DATA);
 
-    
+    const data = connectionRequests
+      .map((row) => {
+        const from = row.fromUserId;
+        const to = row.toUserId;
 
-    const data = connectionRequests.map((row) => {
-      if (row.fromUserId._id.toString() === loggedInUser._id.toString()) {
-        return row.toUserId;
-      }
-      return row.fromUserId;
-    });
+        
+        if (!from || !to) return null;
+
+        if (from._id.toString() === loggedInUser._id.toString()) {
+          return to;
+        }
+        return from;
+      })
+      .filter(Boolean); // remove nulls
 
     res.json({ data });
   } catch (err) {
     res.status(400).send({ message: err.message });
   }
 });
+
 
 userRouter.get("/feed", userAuth, async (req, res) => {
   try {
