@@ -17,7 +17,7 @@ const initializeSocket = require("./utils/socket");
 const path = require("path");
 const server = http.createServer(app);
 
-app.use(express.static(path.join(__dirname, "../client/build"))); 
+ 
 // ---------- CORS ----------
 const allowedOrigins = [
   "http://localhost:5173",               // local dev
@@ -33,10 +33,7 @@ app.use(
   })
 );
 
-// fallback — for any other route, return index.html
-app.get("/*splat", (req, res) => {
-  res.sendFile(path.join(__dirname, "../client/build/index.html"));
-});
+ 
 // ---------- Middleware ----------
 app.use(express.json());
 app.use(cookieParser());
