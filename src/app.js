@@ -45,7 +45,19 @@ app.use("/api", requestRouter);
 app.use("/api", userRouter);
 app.use("/api", chatRouter);
 
- 
+ const path = require("path");
+
+// Serve static frontend
+app.use(express.static(path.join(__dirname, "dist"))); // or "build" depending on your build
+
+// Catch-all: send index.html for any non-API route
+app.get("*", (req, res) => {
+  if (req.path.startsWith("/api")) {
+    return res.status(404).send("API route not found");
+  }
+  res.sendFile(path.join(__dirname, "dist", "index.html"));
+});
+
 
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
